@@ -1677,11 +1677,12 @@ class _SingleReader(object):
                 message = (
                     "cannot align the utterance and %mor tiers:\n"
                     + "Filename: {}\nTiers --\n{}\n"
-                    + "Cleaned-up utterance --\n{}"
+                    + "Cleaned-up utterance --\n{}\n"
+                    + "%mor tier --\n{}"
                 )
                 raise ValueError(
                     message.format(
-                        self.filename(), pformat(tiermarker_to_line), utterance
+                        self.filename(), pformat(tiermarker_to_line), utterance, mor_items
                     )
                 )
 
@@ -1703,9 +1704,15 @@ class _SingleReader(object):
                     gra_items.append(tuple(item_list))
 
             if mor_items and gra_items and (len(mor_items) != len(gra_items)):
+                message = (
+                    "cannot align the %mor and %gra tiers:\n"
+                    + "Filename: {}\nTiers --\n{}\n"
+                    + "%gra tier --\n{}\n"
+                    + "%mor tier --\n{}"
+                )
                 raise ValueError(
-                    "cannot align the %mor and %gra tiers:\n{}".format(
-                        pformat(tiermarker_to_line)
+                    message.format(
+                        self.filename(), pformat(tiermarker_to_line), gra_items, mor_items
                     )
                 )
 

@@ -109,7 +109,23 @@ def clean_utterance(utterance, phon=False):
     utterance = remove_extra_spaces(utterance)
     # print('step 2:', utterance)
 
-    # Step 3:
+    # Step 3a: Script assumes target utterances are a single word
+    #          So first convert all target utterances into a single word
+    #          by replacing ' ' with '~'
+
+    new_utterance = ""
+    prev_ix = 0
+    for index_ in find_indices(utterance, "\[:"):
+        for i in range(index_ + 1, len(utterance)):
+            if utterance[i] == ' ':
+                new_utterance = new_utterance + utterance[prev_ix:i] + '~'
+                prev_ix = i+1
+            if utterance[i] == "]":
+                break
+    new_utterance = new_utterance + utterance[prev_ix:]
+    utterance = new_utterance
+
+    # Step 3b:
     # Handle [/], [//], [///], [/?] for repetitions/reformulation
     #        [: xx] or [:: xx] for errors
     #
@@ -198,20 +214,23 @@ def clean_utterance(utterance, phon=False):
             new_utterance += utterance[i]
     utterance = new_utterance
 
+    # repair errors before retracing them
+    # we don't want to retrace the repairs and leave the errors
+    utterance = re.sub(r"\S+? \[::", "", utterance)
+    utterance = re.sub(r"\S+? \[:", "", utterance)
+
     utterance = re.sub(r"\S+? \[/\]", "", utterance)
     utterance = re.sub(r"\S+? \[//\]", "", utterance)
     utterance = re.sub(r"\S+? \[///\]", "", utterance)
     utterance = re.sub(r"\S+? \[/\?\]", "", utterance)
 
-    utterance = re.sub(r"\S+? \[::", "", utterance)
-    utterance = re.sub(r"\S+? \[:", "", utterance)
-
     utterance = remove_extra_spaces(utterance)
-    # print('step 3:', utterance)
 
-    # Step 4: Remove unwanted symbols
-    utterance = re.sub(r"“", "", utterance)
-    utterance = re.sub(r"”", "", utterance)
+    # print('step 3:', utterance)
+    # Step 4: Handle unwanted characters
+    utterance = re.sub(r"“", '"', utterance)
+    utterance = re.sub(r"”", '"', utterance)
+    utterance = re.sub(r"~", " ", utterance)
 
     utterance = remove_extra_spaces(utterance)
 
